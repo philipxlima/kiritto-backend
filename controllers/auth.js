@@ -2,31 +2,31 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const multer = require("multer");
-const mongoose = require("mongoose"); // Necessário para GridFS
-const { GridFsStorage } = require("multer-gridfs-storage"); // Importar GridFsStorage
+const mongoose = require("mongoose");
 const crypto = require("crypto"); // Para gerar nomes de arquivo únicos
 const path = require("path");
+const fs = require("fs");
 
 const User = require("../models/user");
 const { getDecodedJWT } = require("../lib/is-auth");
 
-// Configuração do GridFS Storage Engine
-const storage = new GridFsStorage({
-    url: process.env.MONGODB_SERVER,
-    options: { useNewUrlParser: true, useUnifiedTopology: true },
-    file: (req, file) => {
-        return new Promise((resolve, reject) => {
-            crypto.randomBytes(16, (err, buf) => {
-                if (err) {
-                    return reject(err);
-                }
-                const filename = buf.toString("hex") + path.extname(file.originalname);
-                const fileInfo = {
-                    filename: filename,
-                    bucketName: "profile_pictures" // Nome da coleção no MongoDB para GridFS
-                };
-                resolve(fileInfo);
-            });
+// Configuração do armazenamento local para multer
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = path.join(__dirname, "../uploads");
+        // Verifica se o diretório existe, se não, cria
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        crypto.randomBytes(16, (err, buf) => {
+            if (err) {
+                return cb(err);
+            }
+            const filename = buf.toString("hex") + path.extname(file.originalname);
+            cb(null, filename);
         });
     }
 });
@@ -39,19 +39,22 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const upload = multer({ storage: storage, fileFilter: fileFilter, limits: { fileSize: 1024 * 1024 * 5 } }); // Limite de 5MB
+const upload = multer({ 
+    storage: storage, 
+    fileFilter: fileFilter, 
+    limits: { fileSize: 1024 * 1024 * 5 } // Limite de 5MB
+});
 
-// Função auxiliar para deletar arquivos do GridFS
-const deleteGridFSFile = async (fileId) => {
-    if (!fileId) return;
+// Função auxiliar para deletar arquivos do sistema de arquivos local
+const deleteLocalFile = async (filePath) => {
+    if (!filePath) return;
     try {
-        const gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "profile_pictures"
-        });
-        await gfs.delete(new mongoose.Types.ObjectId(fileId));
-        console.log(`Arquivo ${fileId} deletado do GridFS.`);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`Arquivo ${filePath} deletado.`);
+        }
     } catch (error) {
-        console.error(`Erro ao deletar arquivo ${fileId} do GridFS:`, error);
+        console.error(`Erro ao deletar arquivo ${filePath}:`, error);
         // Não lançar erro aqui para não interromper o fluxo principal, mas logar
     }
 };
@@ -64,7 +67,7 @@ exports.signup = async (req, res, next) => {
       const error = new Error(msg || "Validation failed! please enter valid input.");
       error.statusCode = 422;
       if (req.file) {
-        await deleteGridFSFile(req.file.id); // Deletar do GridFS se o signup falhar
+        await deleteLocalFile(req.file.path);
       }
       throw error;
     }
@@ -75,7 +78,7 @@ exports.signup = async (req, res, next) => {
         const error = new Error("As senhas não coincidem.");
         error.statusCode = 422;
         if (req.file) {
-            await deleteGridFSFile(req.file.id);
+            await deleteLocalFile(req.file.path);
         }
         throw error;
     }
@@ -83,16 +86,16 @@ exports.signup = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashPwd = await bcrypt.hash(password, salt);
 
-    let profilePictureId = null;
+    let profilePicture = null;
     if (req.file) {
-        profilePictureId = req.file.id; // Salva o ID do arquivo do GridFS
+        profilePicture = req.file.filename; // Salva o nome do arquivo
     }
 
     const user = new User({
       name,
       email,
       password: hashPwd,
-      profilePicture: profilePictureId // Armazena o ObjectId do GridFS
+      profilePicture: profilePicture // Armazena o nome do arquivo
     });
 
     const newUser = await user.save();
@@ -102,12 +105,12 @@ exports.signup = async (req, res, next) => {
       user: {
         name: newUser.name,
         email: newUser.email,
-        profilePicture: newUser.profilePicture // Retorna o ID da imagem
+        profilePicture: newUser.profilePicture // Retorna o nome da imagem
       },
     });
   } catch (error) {
     if (req.file && error.statusCode !== 422) {
-        await deleteGridFSFile(req.file.id);
+        await deleteLocalFile(req.file.path);
     }
     if (!error.statusCode) {
         error.statusCode = 500;
@@ -140,7 +143,7 @@ exports.login = async (req, res, next) => {
       token,
       userId: user._id.toString(),
       username: user.name,
-      profilePicture: user.profilePicture // Retorna o ID da imagem
+      profilePicture: user.profilePicture // Retorna o nome da imagem
     });
   } catch (error) {
     if (!error.statusCode) {
@@ -174,7 +177,7 @@ exports.isAuth = async (req, res, next) => {
     return res.status(200).json({
       decodedToken,
       username: user.name,
-      profilePicture: user.profilePicture // Retorna o ID da imagem
+      profilePicture: user.profilePicture // Retorna o nome da imagem
     });
   } catch (error) {
     if (!error.statusCode) {
@@ -198,26 +201,27 @@ exports.updateProfilePicture = async (req, res, next) => {
         if (!user) {
             const error = new Error("Usuário não encontrado.");
             error.statusCode = 404;
-            await deleteGridFSFile(req.file.id); // Deleta o novo arquivo se o usuário não for encontrado
+            await deleteLocalFile(req.file.path);
             throw error;
         }
 
-        // Se o usuário já tiver uma foto de perfil, remove a antiga do GridFS
+        // Se o usuário já tiver uma foto de perfil, remove a antiga
         if (user.profilePicture) {
-            await deleteGridFSFile(user.profilePicture);
+            const oldPicturePath = path.join(__dirname, "../uploads", user.profilePicture);
+            await deleteLocalFile(oldPicturePath);
         }
 
-        user.profilePicture = req.file.id; // Salva o ID do novo arquivo do GridFS
+        user.profilePicture = req.file.filename; // Salva o nome do novo arquivo
         await user.save();
 
         res.status(200).json({ 
             message: "Foto de perfil atualizada com sucesso!", 
-            profilePicture: user.profilePicture // Retorna o ID da nova imagem
+            profilePicture: user.profilePicture // Retorna o nome da nova imagem
         });
 
     } catch (error) {
         if (req.file && error.statusCode !== 422 && error.statusCode !== 404) { 
-            await deleteGridFSFile(req.file.id);
+            await deleteLocalFile(req.file.path);
         }
         if (!error.statusCode) {
             error.statusCode = 500;
@@ -229,41 +233,17 @@ exports.updateProfilePicture = async (req, res, next) => {
 // Middleware de upload para ser usado nas rotas
 exports.uploadMiddleware = upload.single("profilePicture");
 
-// Nova rota para servir imagens do GridFS
+// Nova rota para servir imagens do sistema de arquivos local
 exports.getProfilePicture = async (req, res, next) => {
     try {
-        const fileId = req.params.fileId;
-        if (!mongoose.Types.ObjectId.isValid(fileId)) {
-            return res.status(400).json({ message: "ID de arquivo inválido." });
+        const filename = req.params.filename;
+        const filePath = path.join(__dirname, "../uploads", filename);
+        
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ message: "Imagem não encontrada." });
         }
-
-        const gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "profile_pictures"
-        });
-
-        const downloadStream = gfs.openDownloadStream(new mongoose.Types.ObjectId(fileId));
-
-        downloadStream.on("file", (file) => {
-            res.set("Content-Type", file.contentType);
-            res.set("Content-Disposition", 'inline; filename="' + file.filename + '"');
-        });
-
-        downloadStream.on("data", (chunk) => {
-            res.write(chunk);
-        });
-
-        downloadStream.on("error", (err) => {
-            if (err.message.includes("File not found")) {
-                return res.status(404).json({ message: "Imagem não encontrada." });
-            }
-            console.error("Erro ao buscar imagem do GridFS:", err);
-            res.status(500).json({ message: "Erro ao buscar imagem." });
-        });
-
-        downloadStream.on("end", () => {
-            res.end();
-        });
-
+        
+        res.sendFile(filePath);
     } catch (error) {
         console.error("Erro na rota getProfilePicture:", error);
         if (!error.statusCode) {
