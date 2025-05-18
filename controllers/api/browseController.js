@@ -577,5 +577,111 @@ exports.browseId = async (req, res, next) => {
             if (_tab?.musicResponsiveHeaderRenderer) {
               final.header = Parser.musicResponsiveHeaderRenderer(
                 _tab.musicResponsiveHeaderRenderer,
-              
-(Content truncated due to size limit. Use line ranges to read in chunks)
+              );
+            }
+          }
+        }
+      }
+    }
+
+    // return res.json(final);
+
+    // error handling
+    if (!final || (final && objectIsEmpty(final?.contents))) {
+      next(create_return_error("List is empty", 404));
+    }
+
+    await memoryClient.set(`/browse/id`, id + params, final, 2); // 2 hour
+
+    return res.json(final);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const filterAlbums = (list) => {
+  const final = [];
+  for (let i of list) {
+    if (i?.musicShelfRenderer) {
+      const contents = Parser.musicShelfRenderer(i.musicShelfRenderer)?.list;
+
+      // error handling
+      if (!contents || (contents && contents?.length <= 0)) return false;
+
+      for (let c of contents) {
+        if (c?.musicResponsiveListItemRenderer) {
+          final.push(
+            Parser.musicResponsiveListItemRenderer(
+              c.musicResponsiveListItemRenderer,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  return final;
+};
+
+const filterPlaylists = (list) => {
+  const final = [];
+  for (let i of list) {
+    if (i?.musicPlaylistShelfRenderer) {
+      final.push(
+        Parser.musicPlaylistShelfRenderer(i.musicPlaylistShelfRenderer, true),
+      );
+    }
+  }
+
+  return final;
+};
+
+const filterArtists = (list) => {
+  const final = [];
+
+  // const result = [];
+  for (let i of list) {
+    const shelfName = Object.keys(i)[0];
+    const hasShelf = objectHas(supportedMusicArtistsProfileShelfs, shelfName);
+
+    if (hasShelf) {
+      final.push(
+        supportedMusicArtistsProfileShelfs[shelfName].hasArgs
+          ? supportedMusicArtistsProfileShelfs[shelfName].function(
+              i[shelfName],
+              ...supportedMusicArtistsProfileShelfs[shelfName].args,
+            )
+          : supportedMusicArtistsProfileShelfs[shelfName].function(
+              i[shelfName],
+            ),
+      );
+    }
+  }
+
+  return final;
+};
+
+const filterRelatedMusic = (list) => {
+  const final = [];
+
+  // const result = [];
+  for (let i of list) {
+    const shelfName = Object.keys(i)[0];
+    const hasShelf = objectHas(supportedMusicArtistsProfileShelfs, shelfName);
+
+    if (hasShelf) {
+      final.push(
+        supportedMusicArtistsProfileShelfs[shelfName].hasArgs
+          ? supportedMusicArtistsProfileShelfs[shelfName].function(
+              i[shelfName],
+              ...supportedMusicArtistsProfileShelfs[shelfName].args,
+            )
+          : supportedMusicArtistsProfileShelfs[shelfName].function(
+              i[shelfName],
+            ),
+      );
+    }
+  }
+
+  return final;
+};
