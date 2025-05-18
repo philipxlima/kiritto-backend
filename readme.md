@@ -1,6 +1,6 @@
-![Repo Banner](https://raw.githubusercontent.com/sahilchouksey/soundrex/master/screenshots/soundrex-repo-banner.png?token=GHSAT0AAAAAABP7QKYUKMI5XP5HWSHPYVJWYRDFJJQ)
+![Repo Banner](https://raw.githubusercontent.com/sahilchouksey/kiritofy/master/screenshots/kiritofy-repo-banner.png?token=GHSAT0AAAAAABP7QKYUKMI5XP5HWSHPYVJWYRDFJJQ)
 
-# Soundrex
+# kiritofy
 
 A Music Player Web App made with React
 
@@ -30,13 +30,13 @@ Check it yourself :)
 
 ## Screenshots
 
-<img src="https://raw.githubusercontent.com/sahilchouksey/soundrex/master/screenshots/screenshot-1.png?token=GHSAT0AAAAAABP7QKYUFMMDP74CGLTCJL7UYRDFKKA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/soundrex/master/screenshots/screenshot-2.png?token=GHSAT0AAAAAABP7QKYVCGVVSHMPRDZMTYFOYRDFLHA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/soundrex/master/screenshots/screenshot-3.png?token=GHSAT0AAAAAABP7QKYVFUWIDVQG63F47EKIYRDFL6Q" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/soundrex/master/screenshots/screenshot-4.png?token=GHSAT0AAAAAABP7QKYU4P4JT34P5XDD6I64YRDFMMA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/soundrex/master/screenshots/screenshot-5.png?token=GHSAT0AAAAAABP7QKYVK5MLN7WRL37QRA32YRDFMZA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/soundrex/master/screenshots/screenshot-6.png?token=GHSAT0AAAAAABP7QKYVCRQNZCTR4QAAVBE2YRDFNGQ" width="32%">
+<img src="https://raw.githubusercontent.com/sahilchouksey/kiritofy/master/screenshots/screenshot-1.png?token=GHSAT0AAAAAABP7QKYUFMMDP74CGLTCJL7UYRDFKKA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/kiritofy/master/screenshots/screenshot-2.png?token=GHSAT0AAAAAABP7QKYVCGVVSHMPRDZMTYFOYRDFLHA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/kiritofy/master/screenshots/screenshot-3.png?token=GHSAT0AAAAAABP7QKYVFUWIDVQG63F47EKIYRDFL6Q" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/kiritofy/master/screenshots/screenshot-4.png?token=GHSAT0AAAAAABP7QKYU4P4JT34P5XDD6I64YRDFMMA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/kiritofy/master/screenshots/screenshot-5.png?token=GHSAT0AAAAAABP7QKYVK5MLN7WRL37QRA32YRDFMZA" width="32%"> <img src="https://raw.githubusercontent.com/sahilchouksey/kiritofy/master/screenshots/screenshot-6.png?token=GHSAT0AAAAAABP7QKYVCRQNZCTR4QAAVBE2YRDFNGQ" width="32%">
 
 ## License
 
 ```
 Copyright © 2022 Sahil Chouksey
-Soundrex is a free software licensed under GPL v3.0
+kiritofy is a free software licensed under GPL v3.0
 It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```

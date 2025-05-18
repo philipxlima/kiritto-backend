@@ -21,8 +21,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
-      "https://soundrex.netlify.app",
-      "https://master--soundrex.netlify.app",
+      "https://kiritofy.netlify.app",
+      "https://master--kiritofy.netlify.app",
       process.env.FRONTEND_URL || "http://localhost:3000" // Adicionar URL do frontend do .env
     ],
     credentials: true,
@@ -37,7 +37,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/v1", apiRoutes);
 app.use("/auth", authRoutes);
-app.use("/soundrex", songRoutes); // Considerar renomear esta rota base se o nome do site mudar
+app.use("/kiritofy", songRoutes); // Considerar renomear esta rota base se o nome do site mudar
 app.use("/api/v1/playlists", playlistRoutes); // Registrar rotas de playlist
 
 app.use((error, req, res, next) => {

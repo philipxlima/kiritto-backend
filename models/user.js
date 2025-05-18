@@ -36,7 +36,8 @@ const userSchema = new Schema(
       trim: true
     },
     profilePicture: {
-      type: String, // Alterado para String para armazenar o nome do arquivo
+      type: mongoose.Schema.Types.ObjectId, // Changed to ObjectId
+      ref: 'uploads.files', // Reference to the GridFS files collection (optional but good practice)
       default: null 
     },
     library: [ // This can be kept for general liked songs, or refactored into the new playlist system
