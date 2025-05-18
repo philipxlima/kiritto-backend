@@ -37,6 +37,31 @@ const highestBitrate = (formats) => {
   }, formats[0]);
 };
 
+// nova linha 
+
+// Adicionar mais APIs alternativas na função extractYoutube
+exports.extractYoutube = async (id, dataType) => {
+  logDebug(`Iniciando extração para ID: ${id}, tipo: ${dataType}`);
+  
+  try {
+    // Tentar primeiro com ytdl-core
+    return await exports.extractFromYtdlCore(id, dataType);
+  } catch (error1) {
+    logDebug(`Falha no ytdl-core: ${error1.message}`);
+    
+    try {
+      // Tentar com API pública
+      return await exports.extractFromPublicAPI(id, dataType);
+    } catch (error2) {
+      logDebug(`Falha na API pública: ${error2.message}`);
+      
+      // Adicionar mais fallbacks aqui se necessário
+      throw new Error("Não foi possível extrair o áudio por nenhum método disponível");
+    }
+  }
+};
+// nova linha
+
 // Função principal para extrair áudio do YouTube usando ytdl-core
 exports.extractFromYtdlCore = async (id, dataType) => {
   try {
