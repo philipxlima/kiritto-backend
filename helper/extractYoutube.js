@@ -127,11 +127,18 @@ exports.extractFromInvidious = async (id, dataType) => {
     logDebug(`Tentando extrair áudio para ID: ${id} usando Invidious`);
     
     // Lista de instâncias Invidious para tentar
+    // const invidiousInstances = [
+    //   "https://invidious.snopyta.org",
+    //   "https://invidious.kavin.rocks",
+    //   "https://vid.puffyan.us",
+    //   "https://invidious.namazso.eu"
+    // ];
     const invidiousInstances = [
-      "https://invidious.snopyta.org",
-      "https://invidious.kavin.rocks",
-      "https://vid.puffyan.us",
-      "https://invidious.namazso.eu"
+    "https://vid.puffyan.us",
+    "https://invidious.kavin.rocks", 
+    "https://invidious.snopyta.org",
+    "https://invidious.flokinet.to",
+    "https://invidio.us"
     ];
     
     // Tentar cada instância até uma funcionar
