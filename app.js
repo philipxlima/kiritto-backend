@@ -20,10 +20,10 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "http://localhost:3001",
+      "http://http://kiritofy.online",
       "https://kiritofy.netlify.app",
-      "https://master--kiritofy.netlify.app",
-      process.env.FRONTEND_URL || "http://localhost:3000" // Adicionar URL do frontend do .env
+      "https://master-kiritofy.netlify.app",
+      process.env.FRONTEND_URL || "https://kiritofy.netlify.app" // Adicionar URL do frontend do .env
     ],
     credentials: true,
   }),
